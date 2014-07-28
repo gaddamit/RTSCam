@@ -13,6 +13,17 @@ public class KeyboardCameraControl : MonoBehaviour
 	public float cameraPositionX;
 	public float cameraPositionY;
 
+	private float minX;
+	private float maxX;
+	private float minY;
+	private float maxY;
+
+	public float vertExtent;
+	public float horzExtent;
+
+	public float scrWidth;
+	public float scrHeight;
+
 	// Keyboard axes buttons in the same order as Unity
 	public enum KeyboardAxis { Horizontal = 0, Vertical = 1, None = 3 }
 	
@@ -78,6 +89,20 @@ public class KeyboardCameraControl : MonoBehaviour
 		mapSpriteWidth = mapSprite.sprite.rect.width;
 		mapSpriteHeight = mapSprite.sprite.rect.height;
 		keyboardAxesNames = new string[] { keyboardHorizontalAxisName, keyboardVerticalAxisName};
+
+		scrWidth = Screen.width;
+		scrHeight = Screen.height;
+		camera.orthographicSize = Screen.height / 2f / 100;
+
+		vertExtent = camera.orthographicSize;
+		horzExtent = vertExtent * Screen.width / Screen.height;
+		
+		// Calculations assume map is position at the origin
+		minX = (horzExtent - camera.ScreenToWorldPoint(new Vector3(2400, 1600,  camera.nearClipPlane)).x) / 2.0f;
+		maxX = (camera.ScreenToWorldPoint(new Vector3(2400, 1600,  camera.nearClipPlane)).x  - horzExtent) / 2.0f;
+		minY = (vertExtent - camera.ScreenToWorldPoint(new Vector3(2400, 1600,  camera.nearClipPlane)).y) / 2.0f;
+		maxY = (camera.ScreenToWorldPoint(new Vector3(2400, 1600,  camera.nearClipPlane)).y - vertExtent) / 2.0f;
+		cameraPositionY = camera.ScreenToWorldPoint(new Vector3(2400, 1600,  camera.nearClipPlane)).y;
 	}
 
 	// LateUpdate  is called once per frame after all Update are done
@@ -113,5 +138,10 @@ public class KeyboardCameraControl : MonoBehaviour
 			float translateZ = Input.GetAxis(keyboardAxesNames[(int)depthTranslation.keyboardAxis]) * depthTranslation.sensitivity;
 			transform.Translate(0, 0, translateZ);
 		}
+
+		Vector3 v3 = transform.localPosition;
+		v3.x = Mathf.Clamp(v3.x, minX, maxX);
+		v3.y = Mathf.Clamp(v3.y, minY, maxY);
+		transform.localPosition = v3;
 	}
 }
