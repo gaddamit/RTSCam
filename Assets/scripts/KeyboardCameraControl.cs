@@ -113,8 +113,5 @@ public class KeyboardCameraControl : MonoBehaviour
 			float translateZ = Input.GetAxis(keyboardAxesNames[(int)depthTranslation.keyboardAxis]) * depthTranslation.sensitivity;
 			transform.Translate(0, 0, translateZ);
 		}
-
-		cameraPositionX = camera.po
-		cameraPositionY = camera.WorldToScreenPoint().y;
 	}
 }
