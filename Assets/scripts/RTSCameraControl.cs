@@ -1,5 +1,5 @@
 ﻿//
-//Filename: MouseCameraControl.cs
+//Filename: RTSCameraControl.cs
 //
 
 using UnityEngine;
@@ -149,8 +149,6 @@ public class RTSCameraControl : MonoBehaviour
 		
 		Vector3 mapVector = new Vector3 (mapSpriteWidth, mapSpriteHeight, camera.nearClipPlane);
 
-		//camera.orthographicSize = Screen.height / 2.0f / 100;
-		
 		vertExtent = camera.orthographicSize;
 		horzExtent = vertExtent * camera.aspect;
 		
@@ -182,12 +180,53 @@ public class RTSCameraControl : MonoBehaviour
 
 	void Update()
 	{
+#if !(UNITY_IPHONE || UNITY_ANDROID || UNITY_WP8 || UNITY_BLACKBERRY)
 		zoom -= Input.GetAxis("Mouse ScrollWheel") * zoomSensitivity;
 		zoom = Mathf.Clamp(zoom, zoomMin, zoomMax);
+#endif
 	}
 	
 	void LateUpdate ()
 	{
+#if UNITY_IPHONE || UNITY_ANDROID || UNITY_WP8 || UNITY_BLACKBERRY
+		if (Input.touchCount == 1 && !isPinching) 
+		{
+			Touch touch = Input.touches[0];
+			if (Input.touches[0].phase == TouchPhase.Began)
+			{
+				previousTouch = Input.touches[0].position;
+			}
+			if (Input.touches[0].phase == TouchPhase.Moved) 
+			{
+				Vector3 previous = camera.ScreenToViewportPoint(new Vector3(previousTouch.x, previousTouch.y, camera.nearClipPlane));
+				Vector3 current = camera.ScreenToViewportPoint(new Vector3(touch.position.x, touch.position.y, camera.nearClipPlane));
+				
+				Vector3 touchPosition = previous - current;
+				camera.transform.position += (touchPosition * touchDragSpeed);
+
+				previousTouch = touch.position;
+			}
+		}
+		
+		//Pinch: Check for 2 fingers touch
+		else if(Input.touchCount == 2) 
+		{
+			isPinching = true;
+			if(Input.touches[1].phase == TouchPhase.Began)
+			{ 
+				startTouchMagnitude = (Input.touches[0].position - Input.touches[1].position).magnitude;
+				startTouchZoom = Camera.main.orthographicSize;
+			}
+			
+			float relativeMagnitudeChange = startTouchMagnitude / (Input.touches[0].position-Input.touches[1].position).magnitude;
+			targetZoom = startTouchZoom * relativeMagnitudeChange;
+			targetZoom = Mathf.Clamp(targetZoom, zoomMin, zoomMax);
+			camera.orthographicSize = Mathf.Lerp (camera.orthographicSize, targetZoom, touchZoomSpeed);
+		} else 
+		{
+			isPinching = false;
+		}
+#else
 		if (mouseVerticalTranslation.isActivated())
 		{
 			float translateY = Input.GetAxis(mouseVerticalAxisName) * mouseVerticalTranslation.sensitivity;
@@ -206,8 +245,6 @@ public class RTSCameraControl : MonoBehaviour
 				camera.orthographicSize = Mathf.Lerp (camera.orthographicSize, zoom, Time.deltaTime * zoomSpeed);
 			else
 				camera.fieldOfView = Mathf.Lerp (camera.fieldOfView, zoom, Time.deltaTime * zoomSpeed);
-
-			AdjustBounds();
 		}
 
 		if (keyboardVerticalTranslation.isActivated())
@@ -221,7 +258,8 @@ public class RTSCameraControl : MonoBehaviour
 			float translateX = Input.GetAxis(keyboardAxesNames[(int)keyboardHorizontalTranslation.keyboardAxis]) * keyboardHorizontalTranslation.sensitivity;
 			transform.Translate(translateX, 0, 0);
 		}
-
+#endif
+		AdjustBounds();
 		Move();
 	}
 

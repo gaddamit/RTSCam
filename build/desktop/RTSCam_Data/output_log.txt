@@ -10,7 +10,11 @@ Platform assembly: C:\Users\Dulfo\Documents\workspace\git\RTSCam\build\desktop\R
 Loading C:\Users\Dulfo\Documents\workspace\git\RTSCam\build\desktop\RTSCam_Data\Managed\UnityEngine.dll into Unity Child Domain
 Platform assembly: C:\Users\Dulfo\Documents\workspace\git\RTSCam\build\desktop\RTSCam_Data\Managed\Assembly-CSharp.dll (this message is harmless)
 Loading C:\Users\Dulfo\Documents\workspace\git\RTSCam\build\desktop\RTSCam_Data\Managed\Assembly-CSharp.dll into Unity Child Domain
-- Completed reload, in  0.050 seconds
+- Completed reload, in  0.049 seconds
 desktop: 1366x768 60Hz; virtual: 1366x768 at 0,0
 <RI> Initializing input.
 <RI> Input initialized.
+The referenced script on this Behaviour is missing!
+ 
+(Filename:  Line: 1783)
+

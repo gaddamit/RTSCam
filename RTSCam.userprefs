@@ -1,9 +1,9 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\scripts\MouseCameraControl.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\scripts\RTSCameraControl.cs">
     <Files>
-      <File FileName="Assets\scripts\MouseCameraControl.cs" Line="212" Column="9" />
-      <File FileName="Assets\scripts\KeyboardCameraControl.cs" Line="13" Column="31" />
+      <File FileName="Assets\scripts\TouchCameraControl.cs" Line="52" Column="4" />
+      <File FileName="Assets\scripts\RTSCameraControl.cs" Line="246" Column="35" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
