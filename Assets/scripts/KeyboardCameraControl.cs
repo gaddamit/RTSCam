@@ -82,7 +82,7 @@ public class KeyboardCameraControl : MonoBehaviour
 	public string keyboardVerticalAxisName = "Vertical";
 	
 	
-	private string[] keyboardAxesNames;
+	public string[] keyboardAxesNames;
 	
 	void Start()
 	{

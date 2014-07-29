@@ -11,14 +11,23 @@ public class RTSCameraControl : MonoBehaviour
 
 	public float orthoZoomSensitivity = 5.0f;
 	public float orthoZoomSpeed = 3.0f;
-	public float orthoZoomMin = 1.5f;
+	public float orthoZoomMin = 2.5f;
 	public float orthoZoomMax= 8.0f;
 	
 	public float perspectiveZoomSensitivity= 30.0f;
 	public float perspectiveZoomSpeed= 5.0f;
 	public float perspectiveZoomMin= 15.0f;
 	public float perspectiveZoomMax= 80.0f;
-	
+
+	public float touchZoomSpeed = 0.2f;
+	public float touchDragSpeed = 15.0f;
+
+	private float startTouchMagnitude;
+	private float startTouchZoom;
+	private float targetZoom;
+	private bool isPinching = false;
+	private Vector2 previousTouch;
+
 	private float zoom;
 	private float zoomSensitivity;
 	private float zoomSpeed;
@@ -140,7 +149,7 @@ public class RTSCameraControl : MonoBehaviour
 		
 		Vector3 mapVector = new Vector3 (mapSpriteWidth, mapSpriteHeight, camera.nearClipPlane);
 
-		camera.orthographicSize = Screen.height / 2.0f / 100;
+		//camera.orthographicSize = Screen.height / 2.0f / 100;
 		
 		vertExtent = camera.orthographicSize;
 		horzExtent = vertExtent * camera.aspect;

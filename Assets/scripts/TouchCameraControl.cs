@@ -7,57 +7,156 @@ using UnityEngine;
 [AddComponentMenu("Camera-Control/Touch")]
 public class TouchCameraControl : MonoBehaviour
 {
-	public float perspectiveZoomSpeed = 0.5f;        // The rate of change of the field of view in perspective mode.
-	public float orthoZoomSpeed = 0.5f;        // The rate of change of the orthographic size in orthographic mode.
+	public SpriteRenderer mapSprite;
 
-	public float orthoZoomMin = 1.5f;
+	public float zoomSpeed = 0.2f;
+
+	private float startTouchMagnitude;
+	private float startTouchZoom;
+	private float targetZoom;
+
+	public float orthoZoomSensitivity = 5.0f;
+	public float orthoZoomSpeed = 3.0f;
+	public float orthoZoomMin = 2.5f;
 	public float orthoZoomMax= 8.0f;
-
+	
+	public float perspectiveZoomSensitivity= 30.0f;
+	public float perspectiveZoomSpeed= 5.0f;
 	public float perspectiveZoomMin= 15.0f;
 	public float perspectiveZoomMax= 80.0f;
+	
+	private float zoom;
+	private float zoomSensitivity;
+
+	private float zoomMin;
+	private float zoomMax;
+	
+	private Rect bounds;
+	
+	private float vertExtent;
+	private float horzExtent;
+
+	private bool isPinching = false;
+	private Vector2 previousTouch;
+	void Start()
+	{
+		InitBounds ();
+		InitZoom ();
+	}
+
+	void InitZoom()
+	{
+		if (camera.isOrthoGraphic)
+		{
+			zoom = camera.orthographicSize;
+			zoomSensitivity = orthoZoomSensitivity;
+			zoomSpeed = orthoZoomSpeed;
+			zoomMin = orthoZoomMin;
+			zoomMax = orthoZoomMax;
+		} else {
+			zoom = camera.fieldOfView;
+			zoomSensitivity = perspectiveZoomSensitivity;
+			zoomSpeed = perspectiveZoomSpeed;
+			zoomMin = perspectiveZoomMin;
+			zoomMax = perspectiveZoomMax;
+		}
+	}
+
+	void InitBounds()
+	{
+		float mapSpriteWidth = mapSprite.sprite.rect.width;
+		float mapSpriteHeight = mapSprite.sprite.rect.height;
+		
+		Vector3 mapVector = new Vector3 (mapSpriteWidth, mapSpriteHeight, camera.nearClipPlane);
+		
+		//camera.orthographicSize = Screen.height / 2.0f / 100;
+		
+		vertExtent = camera.orthographicSize;
+		horzExtent = vertExtent * camera.aspect;
+		
+		// Calculations assume map is at origin
+		bounds.xMin = (horzExtent - camera.ScreenToWorldPoint(mapVector).x) / 2.0f;
+		bounds.xMax = (camera.ScreenToWorldPoint(mapVector).x  - horzExtent) / 2.0f;
+		
+		bounds.yMin = (vertExtent - camera.ScreenToWorldPoint(mapVector).y) / 2.0f;
+		bounds.yMax = (camera.ScreenToWorldPoint(mapVector).y - vertExtent) / 2.0f;
+	}
 
 	void Update()
 	{
-	//	if (camera.isOrthoGraphic)
-	//		camera.orthographicSize = Mathf.Clamp (camera.orthographicSize, orthoZoomMin, orthoZoomMax);
-	//	else
-	//		camera.fieldOfView = Mathf.Clamp(camera.fieldOfView, perspectiveZoomMin, 80.0f);
-	
-		// If there are two touches on the device...
-		if (Input.touchCount == 2)
+
+	}
+
+	void LateUpdate()
+	{
+		//Drag: Check for single touch
+		if (Input.touchCount == 1 && !isPinching) 
 		{
-			// Store both touches.
-			Touch touchZero = Input.GetTouch(0);
-			Touch touchOne = Input.GetTouch(1);
-			
-			// Find the position in the previous frame of each touch.
-			Vector2 touchZeroPrevPos = touchZero.position - touchZero.deltaPosition;
-			Vector2 touchOnePrevPos = touchOne.position - touchOne.deltaPosition;
-			
-			// Find the magnitude of the vector (the distance) between the touches in each frame.
-			float prevTouchDeltaMag = (touchZeroPrevPos - touchOnePrevPos).magnitude;
-			float touchDeltaMag = (touchZero.position - touchOne.position).magnitude;
-			
-			// Find the difference in the distances between each frame.
-			float deltaMagnitudeDiff = prevTouchDeltaMag - touchDeltaMag;
-			
-			// If the camera is orthographic...
-			if (camera.isOrthoGraphic)
+			Touch touch = Input.touches[0];
+			if (Input.touches[0].phase == TouchPhase.Began)
 			{
-				// ... change the orthographic size based on the change in distance between the touches.
-				camera.orthographicSize += deltaMagnitudeDiff * orthoZoomSpeed;
-				
-				// Make sure the orthographic size never drops below zero.
-				camera.orthographicSize = Mathf.Clamp(camera.orthographicSize, orthoZoomMin, orthoZoomMax);
+				previousTouch = Input.touches[0].position;
 			}
-			else
+			if (Input.touches[0].phase == TouchPhase.Moved) 
 			{
-				// Otherwise change the field of view based on the change in distance between the touches.
-				camera.fieldOfView += deltaMagnitudeDiff * perspectiveZoomSpeed;
-				
-				// Clamp the field of view to make sure it's between 0 and 180.
-				camera.fieldOfView = Mathf.Clamp(camera.fieldOfView, perspectiveZoomMin, perspectiveZoomMax);
+				Vector3 previous = camera.ScreenToViewportPoint(new Vector3(previousTouch.x, previousTouch.y, camera.nearClipPlane));
+				Vector3 current = camera.ScreenToViewportPoint(new Vector3(touch.position.x, touch.position.y, camera.nearClipPlane));
+
+				Vector3 touchPosition = previous - current;
+				camera.transform.position += (touchPosition * 15);
+
+				previousTouch = touch.position;
+				//Vector3 touchPosition = Camera.main.ScreenToWorldPoint(new Vector3(touch.position.x, touch.position.y, camera.nearClipPlane));
+				//touchPosition.x = -touchPosition.x;
+				//touchPosition.y = -touchPosition.y;
+				//transform.position = Vector3.Lerp(transform.position, touchPosition, Time.deltaTime * 5);
 			}
 		}
+
+		//Pinch: Check for 2 fingers touch
+		else if(Input.touchCount == 2) 
+		{
+			isPinching = true;
+			if(Input.touches[1].phase == TouchPhase.Began)
+			{ 
+				startTouchMagnitude = (Input.touches[0].position - Input.touches[1].position).magnitude;
+				startTouchZoom = Camera.main.orthographicSize;
+			}
+
+			float relativeMagnitudeChange = startTouchMagnitude / (Input.touches[0].position-Input.touches[1].position).magnitude;
+			targetZoom = startTouchZoom * relativeMagnitudeChange;
+			targetZoom = Mathf.Clamp(targetZoom, zoomMin, zoomMax);
+			camera.orthographicSize = Mathf.Lerp (camera.orthographicSize, targetZoom, zoomSpeed);
+		} else 
+		{
+			isPinching = false;
+		}
+
+		
+		AdjustBounds();
+		Move();
+	}
+
+	void AdjustBounds()
+	{
+		vertExtent = camera.orthographicSize;
+		horzExtent = vertExtent * camera.aspect;
+		
+		bounds.yMin = vertExtent - zoomMax;
+		bounds.yMin = Mathf.Clamp (bounds.yMin, -100, 0);
+		bounds.yMax = zoomMax - vertExtent;
+		bounds.yMax = Mathf.Clamp (bounds.yMax, 0, 100);
+		
+		bounds.xMin = bounds.yMin * camera.aspect;
+		bounds.xMin = Mathf.Clamp (bounds.xMin, -100, 0);
+		bounds.xMax = bounds.yMax * camera.aspect;
+		bounds.xMax = Mathf.Clamp (bounds.xMax, 0, 100);
+	}
+	void Move()
+	{
+		Vector3 v3 = transform.localPosition;
+		v3.x = Mathf.Clamp(v3.x, bounds.xMin, bounds.xMax);
+		v3.y = Mathf.Clamp(v3.y, bounds.yMin, bounds.yMax);
+		transform.localPosition = v3;
 	}
 }

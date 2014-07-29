@@ -40,9 +40,6 @@ public class MouseCameraControl : MonoBehaviour
 	public float vertExtent;
 	public float horzExtent;
 
-	// Mouse buttons in the same order as Unity
-	public enum MouseButton { Left = 0, Right = 1, Middle = 2, None = 3 }
-	
 	[System.Serializable]
 	// Handles left modifiers keys (Alt, Ctrl, Shift)
 	public class Modifiers
@@ -58,7 +55,11 @@ public class MouseCameraControl : MonoBehaviour
 					(!leftShift ^ Input.GetKey(KeyCode.LeftShift));
 		}
 	}
-	
+
+	// Mouse Configuration
+	// Mouse buttons in the same order as Unity
+	public enum MouseButton { Left = 0, Right = 1, Middle = 2, None = 3 }
+
 	[System.Serializable]
 	// Handles common parameters for translations and rotations
 	public class MouseControlConfiguration
@@ -113,6 +114,12 @@ public class MouseCameraControl : MonoBehaviour
 	public string mouseHorizontalAxisName = "Mouse X";
 	public string mouseVerticalAxisName = "Mouse Y";
 	public string scrollAxisName = "Mouse ScrollWheel";
+
+	// End of Mouse Configuration
+
+	// Keyboard Configuration
+
+	// End of Keyboard Configuration
 
 	void Start() 
 	{
@@ -194,8 +201,6 @@ public class MouseCameraControl : MonoBehaviour
 		
 		if (scroll.isActivated())
 		{
-			float deltaOrthiSize = camera.orthographicSize;
-
 			if (camera.isOrthoGraphic)
 				camera.orthographicSize = Mathf.Lerp (camera.orthographicSize, zoom, Time.deltaTime * zoomSpeed);
 			else
