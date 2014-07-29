@@ -7,6 +7,12 @@ using UnityEngine;
 [AddComponentMenu("Camera-Control/Mouse")]
 public class MouseCameraControl : MonoBehaviour
 { 
+	public SpriteRenderer mapSprite;
+	private float mapSpriteWidth;
+	private float mapSpriteHeight;
+	
+	public float cameraPositionX;
+	public float cameraPositionY;
 	public float orthoZoomSensitivity = 5.0f;
 	public float orthoZoomSpeed = 3.0f;
 	public float orthoZoomMin = 1.5f;
@@ -22,6 +28,17 @@ public class MouseCameraControl : MonoBehaviour
 	private float zoomSpeed;
 	private float zoomMin;
 	private float zoomMax;
+
+	
+	public float scrWidth;
+	public float scrHeight;
+	public float minX;
+	public float maxX;
+	public float minY;
+	public float maxY;
+	
+	public float vertExtent;
+	public float horzExtent;
 
 	// Mouse buttons in the same order as Unity
 	public enum MouseButton { Left = 0, Right = 1, Middle = 2, None = 3 }
@@ -99,6 +116,24 @@ public class MouseCameraControl : MonoBehaviour
 
 	void Start() 
 	{
+		mapSpriteWidth = mapSprite.sprite.rect.width;
+		mapSpriteHeight = mapSprite.sprite.rect.height;
+
+		Vector3 mapVector = new Vector3 (mapSpriteWidth, mapSpriteHeight, camera.nearClipPlane);
+
+		scrWidth = Screen.width;
+		scrHeight = Screen.height;
+		camera.orthographicSize = Screen.height / 2.0f / 100;
+		
+		vertExtent = camera.orthographicSize;
+		horzExtent = vertExtent * camera.aspect;
+		
+		// Calculations assume map is at origin
+		minX = (horzExtent - camera.ScreenToWorldPoint(mapVector).x) / 2.0f;
+		maxX = (camera.ScreenToWorldPoint(mapVector).x  - horzExtent) / 2.0f;
+		minY = (vertExtent - camera.ScreenToWorldPoint(mapVector).y) / 2.0f;
+		maxY = (camera.ScreenToWorldPoint(mapVector).y - vertExtent) / 2.0f;
+
 		if (camera.isOrthoGraphic)
 		{
 			zoom = camera.orthographicSize;
@@ -142,13 +177,13 @@ public class MouseCameraControl : MonoBehaviour
 		if (verticalTranslation.isActivated())
 		{
 			float translateY = Input.GetAxis(mouseVerticalAxisName) * verticalTranslation.sensitivity;
-			transform.Translate(0, translateY, 0);
+			transform.Translate(0, -translateY, 0);
 		}
 		
 		if (horizontalTranslation.isActivated())
 		{
 			float translateX = Input.GetAxis(mouseHorizontalAxisName) * horizontalTranslation.sensitivity;
-			transform.Translate(translateX, 0, 0);
+			transform.Translate(-translateX, 0, 0);
 		}
 		
 		if (depthTranslation.isActivated())
@@ -159,11 +194,30 @@ public class MouseCameraControl : MonoBehaviour
 		
 		if (scroll.isActivated())
 		{
+			float deltaOrthiSize = camera.orthographicSize;
+
 			if (camera.isOrthoGraphic)
 				camera.orthographicSize = Mathf.Lerp (camera.orthographicSize, zoom, Time.deltaTime * zoomSpeed);
 			else
 				camera.fieldOfView = Mathf.Lerp (camera.fieldOfView, zoom, Time.deltaTime * zoomSpeed);
+
+			vertExtent = camera.orthographicSize;
+			horzExtent = vertExtent * camera.aspect;
+
+			minY = vertExtent - zoomMax;
+			minY = Mathf.Clamp(minY, -100, 0);
+			maxY = zoomMax - vertExtent;
+			maxY = Mathf.Clamp(maxY, 0, 100);
+
+			minX = minY * camera.aspect;
+			minX = Mathf.Clamp(minX, -100, 0);
+			maxX = maxY * camera.aspect;
+			maxX = Mathf.Clamp(maxX, 0, 100);
 		}
+
+		Vector3 v3 = transform.localPosition;
+		v3.x = Mathf.Clamp(v3.x, minX, maxX);
+		v3.y = Mathf.Clamp(v3.y, minY, maxY);
+		transform.localPosition = v3;
 	}
-	
 }

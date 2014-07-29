@@ -8,11 +8,14 @@ using UnityEngine;
 public class KeyboardCameraControl : MonoBehaviour
 {
 	public SpriteRenderer mapSprite;
+
 	public float mapSpriteWidth;
 	public float mapSpriteHeight;
 	public float cameraPositionX;
 	public float cameraPositionY;
 
+	public float scrWidth;
+	public float scrHeight;
 	private float minX;
 	private float maxX;
 	private float minY;
@@ -20,9 +23,6 @@ public class KeyboardCameraControl : MonoBehaviour
 
 	public float vertExtent;
 	public float horzExtent;
-
-	public float scrWidth;
-	public float scrHeight;
 
 	// Keyboard axes buttons in the same order as Unity
 	public enum KeyboardAxis { Horizontal = 0, Vertical = 1, None = 3 }
