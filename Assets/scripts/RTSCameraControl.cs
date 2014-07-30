@@ -3,6 +3,7 @@
 //
 
 using UnityEngine;
+using System.Collections;
 
 [AddComponentMenu("Camera-Control/RTS")]
 public class RTSCameraControl : MonoBehaviour
@@ -26,8 +27,11 @@ public class RTSCameraControl : MonoBehaviour
 	private float startTouchZoom;
 	private float targetZoom;
 	private bool isPinching = false;
+	private bool isResettingCamera = false;
 	private Vector2 previousTouch;
 
+	private Vector3 origPosition;
+	private float origZoom;
 	private float zoom;
 	private float zoomSensitivity;
 	private float zoomSpeed;
@@ -138,6 +142,7 @@ public class RTSCameraControl : MonoBehaviour
 	{
 		keyboardAxesNames = new string[] { keyboardHorizontalAxisName, keyboardVerticalAxisName};
 
+		origPosition = camera.transform.localPosition;
 		InitBounds ();
 		InitZoom ();
 	}
@@ -164,13 +169,13 @@ public class RTSCameraControl : MonoBehaviour
 	{
 		if (camera.isOrthoGraphic)
 		{
-			zoom = camera.orthographicSize;
+			origZoom = zoom = camera.orthographicSize;
 			zoomSensitivity = orthoZoomSensitivity;
 			zoomSpeed = orthoZoomSpeed;
 			zoomMin = orthoZoomMin;
 			zoomMax = orthoZoomMax;
 		} else {
-			zoom = camera.fieldOfView;
+			origZoom = zoom = camera.fieldOfView;
 			zoomSensitivity = perspectiveZoomSensitivity;
 			zoomSpeed = perspectiveZoomSpeed;
 			zoomMin = perspectiveZoomMin;
@@ -189,6 +194,11 @@ public class RTSCameraControl : MonoBehaviour
 	void LateUpdate ()
 	{
 #if UNITY_IPHONE || UNITY_ANDROID || UNITY_WP8 || UNITY_BLACKBERRY
+		if (isResettingCamera)
+		{
+			StartCoroutine("ResetCamera");
+		}
+
 		if (Input.touchCount == 1 && !isPinching) 
 		{
 			Touch touch = Input.touches[0];
@@ -205,6 +215,12 @@ public class RTSCameraControl : MonoBehaviour
 				camera.transform.position += (touchPosition * touchDragSpeed);
 
 				previousTouch = touch.position;
+			} else
+			{
+				if (touch.tapCount == 2)
+				{
+					isResettingCamera = true;
+				}
 			}
 		}
 		
@@ -263,6 +279,23 @@ public class RTSCameraControl : MonoBehaviour
 		Move();
 	}
 
+	IEnumerator ResetCamera()
+	{
+		float i = 0;
+		isResettingCamera = true;
+		while(i < 1) {
+			if (camera.isOrthoGraphic)
+				camera.orthographicSize = Mathf.Lerp (camera.orthographicSize, zoom, i * zoomSpeed);
+			else
+				camera.fieldOfView = Mathf.Lerp (camera.fieldOfView, origZoom, i * zoomSpeed);
+			
+			camera.transform.position = Vector3.Lerp(camera.transform.position, origPosition, i * zoomSpeed);
+			i += Time.deltaTime * zoomSpeed;
+			yield return null;
+		}
+		isResettingCamera = false;
+	}
+	
 	void AdjustBounds()
 	{
 		vertExtent = camera.orthographicSize;
