@@ -26,4 +26,4 @@ Notes
 - You can download all the files and builds by the *Download Zip* button at the right side of this page
 - There is a working Unity scene file named RTSCam.unity at Assets/scenes
 - There are working builds for different platforms at *build* folder
-- You can test the web browser build using this [link] (http://htmlpreview.github.io/?https://github.com/gaddamit/RTSCam/blob/master/build/unitywebplayer/unitywebplayer.html)
+- You can preview the web browser build using this [link] (http://htmlpreview.github.io/?https://github.com/gaddamit/RTSCam/blob/master/build/unitywebplayer/unitywebplayer.html)
