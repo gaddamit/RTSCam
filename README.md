@@ -6,8 +6,8 @@ Simple Real Time Strategy Camera Script for Unity 2D in C#
 Requirements
 ------
 1. [Unity 3D] (http://unity3d.com/unity/download)
-2. [Android SDK] (http://developer.android.com/sdk/index.html) for building to Android 
-3. Mac with XCode for building to Mac and iOS
+2. [Android SDK] (http://developer.android.com/sdk/index.html) for building Android app
+3. Mac with XCode for building iOS app
 4. [Unity Web Player] (http://unity3d.com/webplayer) for running on browser
 
 Instructions
