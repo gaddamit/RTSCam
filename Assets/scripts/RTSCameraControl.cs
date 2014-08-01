@@ -8,7 +8,6 @@ using System.Collections;
 [AddComponentMenu("Camera-Control/RTS")]
 public class RTSCameraControl : MonoBehaviour
 { 
-	public SpriteRenderer mapSprite;
 	public float mapSpriteWidth;
 	public float mapSpriteHeight;
 
@@ -144,9 +143,6 @@ public class RTSCameraControl : MonoBehaviour
 	void Start() 
 	{
 		keyboardAxesNames = new string[] { keyboardHorizontalAxisName, keyboardVerticalAxisName};
-		
-		mapSpriteWidth = mapSprite.sprite.rect.width;
-		mapSpriteHeight = mapSprite.sprite.rect.height;
 
 		origPosition = camera.transform.localPosition;
 
