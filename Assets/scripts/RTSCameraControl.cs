@@ -9,16 +9,18 @@ using System.Collections;
 public class RTSCameraControl : MonoBehaviour
 { 
 	public SpriteRenderer mapSprite;
+	public float mapSpriteWidth;
+	public float mapSpriteHeight;
 
 	public float orthoZoomSensitivity = 5.0f;
 	public float orthoZoomSpeed = 3.0f;
 	public float orthoZoomMin = 2.5f;
 	public float orthoZoomMax= 8.0f;
 	
-	public float perspectiveZoomSensitivity= 30.0f;
-	public float perspectiveZoomSpeed= 5.0f;
-	public float perspectiveZoomMin= 15.0f;
-	public float perspectiveZoomMax= 80.0f;
+	private float perspectiveZoomSensitivity= 30.0f;
+	private float perspectiveZoomSpeed= 5.0f;
+	private float perspectiveZoomMin= 15.0f;
+	private float perspectiveZoomMax= 80.0f;
 
 	public float touchZoomSpeed = 0.2f;
 	public float touchDragSpeed = 15.0f;
@@ -27,7 +29,6 @@ public class RTSCameraControl : MonoBehaviour
 	private float startTouchZoom;
 	private float targetZoom;
 	private bool isPinching = false;
-	private bool isResettingCamera = false;
 	private Vector2 previousTouch;
 
 	private Vector3 origPosition;
@@ -42,6 +43,8 @@ public class RTSCameraControl : MonoBehaviour
 	
 	private float vertExtent;
 	private float horzExtent;
+
+	private float lastScreenHeight;
 
 	[System.Serializable]
 	// Handles left modifiers keys (Alt, Ctrl, Shift)
@@ -141,28 +144,18 @@ public class RTSCameraControl : MonoBehaviour
 	void Start() 
 	{
 		keyboardAxesNames = new string[] { keyboardHorizontalAxisName, keyboardVerticalAxisName};
+		
+		mapSpriteWidth = mapSprite.sprite.rect.width;
+		mapSpriteHeight = mapSprite.sprite.rect.height;
 
 		origPosition = camera.transform.localPosition;
-		InitBounds ();
+
+#if (UNITY_IPHONE || UNITY_ANDROID || UNITY_WP8 || UNITY_BLACKBERRY)
+		lastScreenHeight = Screen.height;
+#endif
+
 		InitZoom ();
-	}
-
-	void InitBounds()
-	{
-		float mapSpriteWidth = mapSprite.sprite.rect.width;
-		float mapSpriteHeight = mapSprite.sprite.rect.height;
-		
-		Vector3 mapVector = new Vector3 (mapSpriteWidth, mapSpriteHeight, camera.nearClipPlane);
-
-		vertExtent = camera.orthographicSize;
-		horzExtent = vertExtent * camera.aspect;
-		
-		// Calculations assume map is at origin
-		bounds.xMin = (horzExtent - camera.ScreenToWorldPoint(mapVector).x) / 2.0f;
-		bounds.xMax = (camera.ScreenToWorldPoint(mapVector).x  - horzExtent) / 2.0f;
-
-		bounds.yMin = (vertExtent - camera.ScreenToWorldPoint(mapVector).y) / 2.0f;
-		bounds.yMax = (camera.ScreenToWorldPoint(mapVector).y - vertExtent) / 2.0f;
+		AdjustBounds ();
 	}
 
 	void InitZoom()
@@ -173,7 +166,16 @@ public class RTSCameraControl : MonoBehaviour
 			zoomSensitivity = orthoZoomSensitivity;
 			zoomSpeed = orthoZoomSpeed;
 			zoomMin = orthoZoomMin;
-			zoomMax = orthoZoomMax;
+			//Ortographic Size: Camera's half-size when in orthographic mode.
+			//Need to fit map's height
+			// 1 Unity World Unity = 100 pixels
+			zoomMax = mapSpriteHeight / 100.0f / 2;
+
+			if (camera.aspect < mapSpriteWidth / (float)mapSpriteHeight)
+			{
+				float adjust = (mapSpriteWidth * Screen.height) / (mapSpriteHeight * Screen.width);
+				zoomMax *= adjust;
+			}
 		} else {
 			origZoom = zoom = camera.fieldOfView;
 			zoomSensitivity = perspectiveZoomSensitivity;
@@ -185,20 +187,31 @@ public class RTSCameraControl : MonoBehaviour
 
 	void Update()
 	{
+
 #if !(UNITY_IPHONE || UNITY_ANDROID || UNITY_WP8 || UNITY_BLACKBERRY)
 		zoom -= Input.GetAxis("Mouse ScrollWheel") * zoomSensitivity;
 		zoom = Mathf.Clamp(zoom, zoomMin, zoomMax);
+#else
+		if (lastScreenHeight != Screen.height)
+		{
+			zoomMax = mapSpriteHeight / 100.0f / 2;
+			if (camera.aspect < (mapSpriteWidth / (float)mapSpriteHeight))
+			{
+				float adjust = (mapSpriteWidth * Screen.height) / (mapSpriteHeight * Screen.width);
+				zoomMax *= adjust;
+			}
+
+			camera.orthographicSize = zoomMax;
+			lastScreenHeight = Screen.height;
+			AdjustBounds();
+			Move ();
+		}
 #endif
 	}
 	
 	void LateUpdate ()
 	{
 #if UNITY_IPHONE || UNITY_ANDROID || UNITY_WP8 || UNITY_BLACKBERRY
-		if (isResettingCamera)
-		{
-			StartCoroutine("ResetCamera");
-		}
-
 		if (Input.touchCount == 1 && !isPinching) 
 		{
 			Touch touch = Input.touches[0];
@@ -215,13 +228,7 @@ public class RTSCameraControl : MonoBehaviour
 				camera.transform.position += (touchPosition * touchDragSpeed);
 
 				previousTouch = touch.position;
-			} else
-			{
-				if (touch.tapCount == 2)
-				{
-					isResettingCamera = true;
-				}
-			}
+			} 
 		}
 		
 		//Pinch: Check for 2 fingers touch
@@ -275,40 +282,26 @@ public class RTSCameraControl : MonoBehaviour
 			transform.Translate(translateX, 0, 0);
 		}
 #endif
-		AdjustBounds();
-		Move();
+
+		AdjustBounds ();
+		Move ();
 	}
 
-	IEnumerator ResetCamera()
-	{
-		float i = 0;
-		isResettingCamera = true;
-		while(i < 1) {
-			if (camera.isOrthoGraphic)
-				camera.orthographicSize = Mathf.Lerp (camera.orthographicSize, zoom, i * zoomSpeed);
-			else
-				camera.fieldOfView = Mathf.Lerp (camera.fieldOfView, origZoom, i * zoomSpeed);
-			
-			camera.transform.position = Vector3.Lerp(camera.transform.position, origPosition, i * zoomSpeed);
-			i += Time.deltaTime * zoomSpeed;
-			yield return null;
-		}
-		isResettingCamera = false;
-	}
-	
 	void AdjustBounds()
 	{
+		float mapWorldSizeWidth = mapSpriteWidth / 100 / 2.0f;
+		float mapWorldSizeHeight = mapSpriteHeight / 100 / 2.0f;
 		vertExtent = camera.orthographicSize;
 		horzExtent = vertExtent * camera.aspect;
 		
-		bounds.yMin = vertExtent - zoomMax;
+		bounds.yMin = vertExtent - mapWorldSizeHeight;
 		bounds.yMin = Mathf.Clamp (bounds.yMin, -100, 0);
-		bounds.yMax = zoomMax - vertExtent;
+		bounds.yMax = mapWorldSizeHeight - vertExtent;
 		bounds.yMax = Mathf.Clamp (bounds.yMax, 0, 100);
 
-		bounds.xMin = bounds.yMin * camera.aspect;
+		bounds.xMin = horzExtent - mapWorldSizeWidth;
 		bounds.xMin = Mathf.Clamp (bounds.xMin, -100, 0);
-		bounds.xMax = bounds.yMax * camera.aspect;
+		bounds.xMax = mapWorldSizeWidth - horzExtent;
 		bounds.xMax = Mathf.Clamp (bounds.xMax, 0, 100);
 	}
 
