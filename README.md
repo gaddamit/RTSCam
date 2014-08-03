@@ -17,7 +17,7 @@ Instructions
 3. Click on your world map image, set the 'Texture Type' property to Sprite(2d\ uGUI) and set the 'Max Size' property to one size bigger the image. If the image is 2400x1600, use 4096.
     * Some devices do not support very large images, slicing them to smaller images may be necessary. Use a photo editor then import and set 'Texture Type' to Sprite(2d\ uGui) for each.
     * Drag the image slices from your Project window to your Scene then **reassemble** them. 
-    * For example, a 2400x1600 image is sliced to two 1200x1600 images. 'Max Size' property should be 2048 for each slice.
+    * For example, a 2400x1600 image is sliced into two 1200x1600 images. 'Max Size' property should be 2048 for each slice.
 4. Click on the Scene's Main Camera, then apply the RTSCameraControl.cs by dragging it to Main Camera's Inspector
 5. Click on the Scene's Main Camera again. On the Inspector, click on the arrow beside RTSCamera Control component to show the script's properties.
 6. There should be a Map Sprite Width and Map Sprite Height properties, input the world map width and height. If using image slices, use the total width and height of the assembled world map.
