@@ -15,6 +15,7 @@ Instructions
 1. Create an empty project in Unity.
 2. Import the camera script (Assets/scripts/RTSCameraControl.cs) and an image file to serve as your world map. *Menu -> Assets -> Import New Asset*
 3. Click on your world map image, set the 'Texture Type' property to Sprite(2d\ uGUI) and set the 'Max Size' property to 4096 through the Inspector.
+--* Some devices doesn't support very large images, slicing them to smaller images may be necessary. The map then needs to be assembled inside Unity.
 4. Drag the world map image from your Project window to your Scene, set the Position to (0, 0, 0).
 5. Click on the Scene's Main Camera, then apply the RTSCameraControl.cs by dragging it to Main Camera's Inspector
 6. Click on the Scene's Main Camera again. On the Inspector, click on the arrow beside RTSCamera Control component to show the script's properties.
