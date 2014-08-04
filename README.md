@@ -20,7 +20,7 @@ Instructions
     * For example, a 2400x1600 image is sliced into two 1200x1600 images. 'Max Size' property should be 2048 for each slice.
 4. Click on the Scene's Main Camera, then apply the RTSCameraControl.cs by dragging it to Main Camera's Inspector
 5. Click on the Scene's Main Camera again. On the Inspector, click on the arrow beside RTSCamera Control component to show the script's properties.
-6. There should be a Map Sprite Width and Map Sprite Height properties, input the world map width and height. If using image slices, use the total width and height of the assembled world map.
+6. There should be Map Sprite Width and Map Sprite Height property fields, input the world map width and height. If using image slices, use the total width and height of the assembled world map.
 7. Press Play
 
 Notes
