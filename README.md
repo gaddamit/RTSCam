@@ -14,12 +14,14 @@ Instructions
 ------
 1. Create an empty project in Unity.
 2. Import the camera script (Assets/scripts/RTSCameraControl.cs) and an image file to serve as your world map. *Menu -> Assets -> Import New Asset*
-3. Click on your world map image, set the 'Texture Type' property to Sprite(2d\ uGUI) and set the 'Max Size' property to 4096 through the Inspector.
-4. Drag the world map image from your Project window to your Scene, set the Position to (0, 0, 0).
-5. Click on the Scene's Main Camera, then apply the RTSCameraControl.cs by dragging it to Main Camera's Inspector
-6. Click on the Scene's Main Camera again. On the Inspector, click on the arrow beside RTSCamera Control component to show the script's properties.
-7. There should be a Map Sprite property. Assign your world map by dragging the world map image from the Heirarchy window to the script's Map Sprite field
-8. Press Play
+3. Click on your world map image, set the 'Texture Type' property to Sprite(2d\ uGUI) and set the 'Max Size' property to one size bigger the image. If the image is 2400x1600, use 4096.
+    * Some devices do not support very large images, slicing them to smaller images may be necessary. Use a photo editor then import and set 'Texture Type' to Sprite(2d\ uGui) for each.
+    * Drag the image slices from your Project window to your Scene then **reassemble** them. 
+    * For example, a 2400x1600 image is sliced into two 1200x1600 images. 'Max Size' property should be 2048 for each slice.
+4. Click on the Scene's Main Camera, then apply the RTSCameraControl.cs by dragging it to Main Camera's Inspector
+5. Click on the Scene's Main Camera again. On the Inspector, click on the arrow beside RTSCamera Control component to show the script's properties.
+6. There should be Map Sprite Width and Map Sprite Height property fields, input the world map width and height. If using image slices, use the total width and height of the assembled world map.
+7. Press Play
 
 Notes
 ------
