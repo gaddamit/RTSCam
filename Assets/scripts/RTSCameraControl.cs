@@ -137,7 +137,7 @@ public class RTSCameraControl : MonoBehaviour
 	// Default unity names for keyboard axes
 	public string keyboardHorizontalAxisName = "Horizontal";
 	public string keyboardVerticalAxisName = "Vertical";
-	public string[] keyboardAxesNames;
+	private string[] keyboardAxesNames;
 	// END KEYBOARD CONFIGURATION
 
 	void Start() 
